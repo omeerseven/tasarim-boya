@@ -1,20 +1,12 @@
 import { NextResponse } from "next/server";
 import {
   createSessionToken,
-  isConfigured,
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
   verifyPassword,
 } from "@/lib/admin-auth";
 
 export async function POST(request: Request) {
-  if (!isConfigured()) {
-    return NextResponse.json(
-      { error: "Yönetim paneli henüz kurulmadı." },
-      { status: 400 },
-    );
-  }
-
   const body = await request.json().catch(() => null);
   const password = typeof body?.password === "string" ? body.password : "";
 

@@ -7,6 +7,12 @@ const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 
 export const SESSION_COOKIE_NAME = "tb_admin_session";
 
+// Setup ekranı devre dışı: ilk girişte bu sabit şifre kabul edilir ve
+// admin-auth.json otomatik olarak bu bilgilerle oluşturulur.
+const DEFAULT_ADMIN_PASSWORD = "TasarimBoya2026!";
+const DEFAULT_SECURITY_QUESTION = "Varsayılan güvenlik sorusu nedir?";
+const DEFAULT_SECURITY_ANSWER = "tasarimboya";
+
 type AdminAuth = {
   passwordHash: string;
   passwordSalt: string;
@@ -72,7 +78,11 @@ export function setupAdmin(
 
 export function verifyPassword(password: string): boolean {
   const auth = readAuth();
-  if (!auth) return false;
+  if (!auth) {
+    if (password !== DEFAULT_ADMIN_PASSWORD) return false;
+    setupAdmin(DEFAULT_ADMIN_PASSWORD, DEFAULT_SECURITY_QUESTION, DEFAULT_SECURITY_ANSWER);
+    return true;
+  }
   return safeEqualHex(hash(password, auth.passwordSalt), auth.passwordHash);
 }
 
