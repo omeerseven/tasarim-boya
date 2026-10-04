@@ -123,7 +123,7 @@ export default function AdminLoginPage() {
                   Devam etmek için şifrenizi girin.
                 </p>
               </div>
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} noValidate className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="text-sand-100">Şifre</Label>
                   <Input
@@ -168,7 +168,7 @@ export default function AdminLoginPage() {
                   güvenlik sorusu belirleyin.
                 </p>
               </div>
-              <form onSubmit={handleSetup} className="space-y-4">
+              <form onSubmit={handleSetup} noValidate className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="text-sand-100">Şifre</Label>
                   <Input

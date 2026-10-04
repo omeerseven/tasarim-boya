@@ -120,7 +120,7 @@ export default function ForgotPasswordPage() {
                   Güvenlik sorunuzu yanıtlayarak yeni bir şifre belirleyin.
                 </p>
               </div>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="text-sand-100">Güvenlik Sorusu</Label>
                   <p className="rounded-lg border border-navy-700 bg-navy-950 px-3 py-2 text-sm text-sand-200">
