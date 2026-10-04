@@ -62,16 +62,8 @@ export default function AdminLoginPage() {
 
   async function handleSetup(e: FormEvent) {
     e.preventDefault();
-    if (setupPassword.length < 8) {
-      setError("Şifre en az 8 karakter olmalıdır.");
-      return;
-    }
     if (setupPassword !== setupConfirm) {
       setError("Şifreler eşleşmiyor.");
-      return;
-    }
-    if (!securityQuestion.trim() || !securityAnswer.trim()) {
-      setError("Güvenlik sorusu ve cevabı zorunludur.");
       return;
     }
 
@@ -173,7 +165,6 @@ export default function AdminLoginPage() {
                   <Label className="text-sand-100">Şifre</Label>
                   <Input
                     type="password"
-                    required
                     value={setupPassword}
                     onChange={(e) => setSetupPassword(e.target.value)}
                     className="border-navy-700 bg-navy-950 text-sand-50"
@@ -183,7 +174,6 @@ export default function AdminLoginPage() {
                   <Label className="text-sand-100">Şifre (Tekrar)</Label>
                   <Input
                     type="password"
-                    required
                     value={setupConfirm}
                     onChange={(e) => setSetupConfirm(e.target.value)}
                     className="border-navy-700 bg-navy-950 text-sand-50"
@@ -192,7 +182,6 @@ export default function AdminLoginPage() {
                 <div className="space-y-1.5">
                   <Label className="text-sand-100">Güvenlik Sorusu</Label>
                   <Input
-                    required
                     placeholder="Örn: İlk projemizin yapıldığı ilçe neresidir?"
                     value={securityQuestion}
                     onChange={(e) => setSecurityQuestion(e.target.value)}
@@ -202,7 +191,6 @@ export default function AdminLoginPage() {
                 <div className="space-y-1.5">
                   <Label className="text-sand-100">Cevap</Label>
                   <Input
-                    required
                     value={securityAnswer}
                     onChange={(e) => setSecurityAnswer(e.target.value)}
                     className="border-navy-700 bg-navy-950 text-sand-50"

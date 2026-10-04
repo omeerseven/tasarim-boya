@@ -22,19 +22,6 @@ export async function POST(request: Request) {
   const securityAnswer =
     typeof body?.securityAnswer === "string" ? body.securityAnswer.trim() : "";
 
-  if (password.length < 8) {
-    return NextResponse.json(
-      { error: "Şifre en az 8 karakter olmalıdır." },
-      { status: 400 },
-    );
-  }
-  if (!securityQuestion || !securityAnswer) {
-    return NextResponse.json(
-      { error: "Güvenlik sorusu ve cevabı zorunludur." },
-      { status: 400 },
-    );
-  }
-
   setupAdmin(password, securityQuestion, securityAnswer);
   const token = createSessionToken();
 

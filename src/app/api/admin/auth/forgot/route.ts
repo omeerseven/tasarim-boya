@@ -24,13 +24,6 @@ export async function POST(request: Request) {
   const answer = typeof body?.answer === "string" ? body.answer : "";
   const newPassword = typeof body?.newPassword === "string" ? body.newPassword : "";
 
-  if (newPassword.length < 8) {
-    return NextResponse.json(
-      { error: "Yeni şifre en az 8 karakter olmalıdır." },
-      { status: 400 },
-    );
-  }
-
   const success = resetPasswordWithAnswer(answer, newPassword);
   if (!success) {
     return NextResponse.json({ error: "Güvenlik cevabı yanlış." }, { status: 401 });

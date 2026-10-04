@@ -37,10 +37,6 @@ export default function ForgotPasswordPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (newPassword.length < 8) {
-      setError("Yeni şifre en az 8 karakter olmalıdır.");
-      return;
-    }
     if (newPassword !== confirmPassword) {
       setError("Yeni şifreler eşleşmiyor.");
       return;
@@ -130,7 +126,6 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-1.5">
                   <Label className="text-sand-100">Cevabınız</Label>
                   <Input
-                    required
                     autoFocus
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
@@ -141,7 +136,6 @@ export default function ForgotPasswordPage() {
                   <Label className="text-sand-100">Yeni Şifre</Label>
                   <Input
                     type="password"
-                    required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="border-navy-700 bg-navy-950 text-sand-50"
@@ -151,7 +145,6 @@ export default function ForgotPasswordPage() {
                   <Label className="text-sand-100">Yeni Şifre (Tekrar)</Label>
                   <Input
                     type="password"
-                    required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="border-navy-700 bg-navy-950 text-sand-50"
