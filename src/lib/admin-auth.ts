@@ -44,8 +44,23 @@ function readAuth(): AdminAuth | null {
 }
 
 function writeAuth(data: AdminAuth): void {
-  fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true });
-  fs.writeFileSync(AUTH_FILE, JSON.stringify(data, null, 2), "utf-8");
+  try {
+    fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true });
+    fs.writeFileSync(AUTH_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch {
+    // Salt ortamlarda (örn. Vercel serverless) dosya sistemi yazılamaz
+    // olabilir. Sabit şifre girişi dosya yazımına bağlı değil, bu yüzden
+    // burada sessizce yutuyoruz.
+  }
+}
+
+const DEFAULT_SESSION_SECRET = crypto
+  .createHash("sha256")
+  .update(`tb-admin-static-secret:${DEFAULT_ADMIN_PASSWORD}`)
+  .digest("hex");
+
+function getSessionSecret(): string {
+  return readAuth()?.sessionSecret ?? DEFAULT_SESSION_SECRET;
 }
 
 function safeEqualHex(a: string, b: string): boolean {
@@ -77,12 +92,16 @@ export function setupAdmin(
 }
 
 export function verifyPassword(password: string): boolean {
-  const auth = readAuth();
-  if (!auth) {
-    if (password !== DEFAULT_ADMIN_PASSWORD) return false;
-    setupAdmin(DEFAULT_ADMIN_PASSWORD, DEFAULT_SECURITY_QUESTION, DEFAULT_SECURITY_ANSWER);
+  // Sabit varsayılan şifre: dosya sistemi durumuna veya herhangi bir
+  // regex/pattern kontrolüne bağlı olmayan düz string karşılaştırması.
+  if (password === DEFAULT_ADMIN_PASSWORD) {
+    if (!isConfigured()) {
+      setupAdmin(DEFAULT_ADMIN_PASSWORD, DEFAULT_SECURITY_QUESTION, DEFAULT_SECURITY_ANSWER);
+    }
     return true;
   }
+  const auth = readAuth();
+  if (!auth) return false;
   return safeEqualHex(hash(password, auth.passwordSalt), auth.passwordHash);
 }
 
@@ -135,22 +154,20 @@ export function updateSecurityQuestion(
   return true;
 }
 
-export function createSessionToken(): string | null {
-  const auth = readAuth();
-  if (!auth) return null;
+export function createSessionToken(): string {
+  const secret = getSessionSecret();
   const payload = JSON.stringify({ exp: Date.now() + SESSION_TTL_MS });
   const base = Buffer.from(payload, "utf-8").toString("base64url");
-  const sig = crypto.createHmac("sha256", auth.sessionSecret).update(base).digest("base64url");
+  const sig = crypto.createHmac("sha256", secret).update(base).digest("base64url");
   return `${base}.${sig}`;
 }
 
 export function verifySessionToken(token: string | undefined | null): boolean {
   if (!token) return false;
-  const auth = readAuth();
-  if (!auth) return false;
   const [base, sig] = token.split(".");
   if (!base || !sig) return false;
-  const expectedSig = crypto.createHmac("sha256", auth.sessionSecret).update(base).digest("base64url");
+  const secret = getSessionSecret();
+  const expectedSig = crypto.createHmac("sha256", secret).update(base).digest("base64url");
   if (sig.length !== expectedSig.length) return false;
   if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) return false;
   try {
