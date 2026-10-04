@@ -3,8 +3,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { FloatingContactButtons } from "@/components/floating-contact-buttons";
 import { getContent } from "@/lib/content";
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
-  const { services, navLinks, contact, branding } = getContent();
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const { services, navLinks, contact, branding } = await getContent();
 
   return (
     <>

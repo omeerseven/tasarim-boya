@@ -61,8 +61,8 @@ const highlights = [
   },
 ];
 
-export default function HomePage() {
-  const { hero, stats, services, faqs } = getContent();
+export default async function HomePage() {
+  const { hero, stats, services, faqs } = await getContent();
 
   return (
     <>

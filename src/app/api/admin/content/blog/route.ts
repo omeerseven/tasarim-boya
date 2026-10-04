@@ -19,6 +19,6 @@ export async function PUT(request: Request) {
     slugs.add(post.slug);
   }
 
-  const content = updateBlogPosts(body);
+  const content = await updateBlogPosts(body);
   return NextResponse.json({ blogPosts: content.blogPosts });
 }

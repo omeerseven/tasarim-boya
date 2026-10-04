@@ -15,6 +15,6 @@ export async function PUT(request: Request) {
     );
   }
 
-  const content = updateHero(body);
+  const content = await updateHero(body);
   return NextResponse.json({ hero: content.hero });
 }

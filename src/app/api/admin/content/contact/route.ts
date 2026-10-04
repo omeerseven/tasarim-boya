@@ -28,6 +28,6 @@ export async function PUT(request: Request) {
     typeof body.mapEmbedUrl === "string" ? body.mapEmbedUrl : "",
   );
 
-  const content = updateContact({ ...body, mapEmbedUrl });
+  const content = await updateContact({ ...body, mapEmbedUrl });
   return NextResponse.json({ contact: content.contact });
 }

@@ -31,8 +31,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlogPage() {
-  const { blogPosts } = getContent();
+export default async function BlogPage() {
+  const { blogPosts } = await getContent();
   const [featured, ...rest] = blogPosts;
 
   return (

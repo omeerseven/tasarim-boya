@@ -8,6 +8,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Geçersiz hakkımızda verisi." }, { status: 400 });
   }
 
-  const content = updateAbout(body);
+  const content = await updateAbout(body);
   return NextResponse.json({ about: content.about });
 }

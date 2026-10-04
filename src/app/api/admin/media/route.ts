@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
 import path from "path";
 import { addMediaItem, getContent, removeMediaItem } from "@/lib/content";
+import { supabase } from "@/lib/supabase";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+const BUCKET = "media";
 const MAX_SIZE_BYTES = 8 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"]);
 
@@ -18,8 +18,16 @@ function sanitizeFileName(name: string): string {
   return `${Date.now()}-${base || "gorsel"}${ext}`;
 }
 
+/** Storage public URL'sinden bucket içindeki dosya yolunu çıkarır. */
+function storagePathFromUrl(url: string): string | null {
+  const marker = `/object/public/${BUCKET}/`;
+  const index = url.indexOf(marker);
+  if (index === -1) return null;
+  return decodeURIComponent(url.slice(index + marker.length));
+}
+
 export async function GET() {
-  const content = getContent();
+  const content = await getContent();
   return NextResponse.json({ media: content.media });
 }
 
@@ -43,13 +51,18 @@ export async function POST(request: Request) {
     );
   }
 
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
   const fileName = sanitizeFileName(file.name || "gorsel");
-  const filePath = path.join(UPLOAD_DIR, fileName);
   const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(filePath, buffer);
 
-  const mediaItem = addMediaItem({ url: `/uploads/${fileName}`, name: file.name || fileName });
+  const { error: uploadError } = await supabase.storage
+    .from(BUCKET)
+    .upload(fileName, buffer, { contentType: file.type, cacheControl: "31536000" });
+  if (uploadError) {
+    return NextResponse.json({ error: "Görsel yüklenemedi." }, { status: 500 });
+  }
+
+  const { data: publicUrlData } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+  const mediaItem = await addMediaItem({ url: publicUrlData.publicUrl, name: file.name || fileName });
   return NextResponse.json({ media: mediaItem }, { status: 201 });
 }
 
@@ -60,16 +73,16 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "id parametresi gereklidir." }, { status: 400 });
   }
 
-  const content = getContent();
+  const content = await getContent();
   const item = content.media.find((m) => m.id === id);
-  const removed = removeMediaItem(id);
+  const removed = await removeMediaItem(id);
   if (!removed) {
     return NextResponse.json({ error: "Medya bulunamadı." }, { status: 404 });
   }
 
-  if (item && item.url.startsWith("/uploads/")) {
-    const filePath = path.join(process.cwd(), "public", item.url);
-    await fs.unlink(filePath).catch(() => undefined);
+  const storagePath = item ? storagePathFromUrl(item.url) : null;
+  if (storagePath) {
+    await supabase.storage.from(BUCKET).remove([storagePath]);
   }
 
   return NextResponse.json({ ok: true });

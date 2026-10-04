@@ -1,7 +1,4 @@
-import { promises as fs } from "fs";
-import path from "path";
-
-const DATA_FILE = path.join(process.cwd(), "data", "leads.json");
+import { supabase } from "@/lib/supabase";
 
 export type Lead = {
   id: string;
@@ -15,46 +12,67 @@ export type Lead = {
   createdAt: string;
 };
 
-export async function getLeads(): Promise<Lead[]> {
-  try {
-    const raw = await fs.readFile(DATA_FILE, "utf-8");
-    return JSON.parse(raw) as Lead[];
-  } catch {
-    return [];
-  }
-}
+type LeadRow = {
+  id: string;
+  type: "quote" | "contact";
+  name: string;
+  phone: string;
+  email: string;
+  service: string | null;
+  message: string;
+  status: "yeni" | "iletisime-gecildi" | "tamamlandi";
+  created_at: string;
+};
 
-export async function addLead(
-  lead: Omit<Lead, "id" | "createdAt" | "status">,
-): Promise<Lead> {
-  const leads = await getLeads();
-  const newLead: Lead = {
-    ...lead,
-    id: `lead-${Date.now()}`,
-    status: "yeni",
-    createdAt: new Date().toISOString(),
+function fromRow(row: LeadRow): Lead {
+  return {
+    id: row.id,
+    type: row.type,
+    name: row.name,
+    phone: row.phone,
+    email: row.email,
+    service: row.service ?? undefined,
+    message: row.message,
+    status: row.status,
+    createdAt: row.created_at,
   };
-  leads.unshift(newLead);
-  await fs.writeFile(DATA_FILE, JSON.stringify(leads, null, 2), "utf-8");
-  return newLead;
 }
 
-export async function updateLeadStatus(
-  id: string,
-  status: Lead["status"],
-): Promise<Lead | null> {
-  const leads = await getLeads();
-  const lead = leads.find((l) => l.id === id);
-  if (!lead) return null;
-  lead.status = status;
-  await fs.writeFile(DATA_FILE, JSON.stringify(leads, null, 2), "utf-8");
-  return lead;
+export async function getLeads(): Promise<Lead[]> {
+  const { data } = await supabase
+    .from("leads")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (data ?? []).map((row) => fromRow(row as LeadRow));
+}
+
+export async function addLead(lead: Omit<Lead, "id" | "createdAt" | "status">): Promise<Lead> {
+  const row: LeadRow = {
+    id: `lead-${Date.now()}`,
+    type: lead.type,
+    name: lead.name,
+    phone: lead.phone,
+    email: lead.email,
+    service: lead.service ?? null,
+    message: lead.message,
+    status: "yeni",
+    created_at: new Date().toISOString(),
+  };
+  await supabase.from("leads").insert(row);
+  return fromRow(row);
+}
+
+export async function updateLeadStatus(id: string, status: Lead["status"]): Promise<Lead | null> {
+  const { data } = await supabase
+    .from("leads")
+    .update({ status })
+    .eq("id", id)
+    .select("*")
+    .maybeSingle();
+  return data ? fromRow(data as LeadRow) : null;
 }
 
 export async function deleteLead(id: string): Promise<boolean> {
-  const leads = await getLeads();
-  const next = leads.filter((l) => l.id !== id);
-  if (next.length === leads.length) return false;
-  await fs.writeFile(DATA_FILE, JSON.stringify(next, null, 2), "utf-8");
-  return true;
+  const { data } = await supabase.from("leads").delete().eq("id", id).select("id");
+  return (data?.length ?? 0) > 0;
 }

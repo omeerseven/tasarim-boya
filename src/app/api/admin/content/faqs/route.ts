@@ -8,6 +8,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Geçersiz SSS verisi." }, { status: 400 });
   }
 
-  const content = updateFaqs(body);
+  const content = await updateFaqs(body);
   return NextResponse.json({ faqs: content.faqs });
 }

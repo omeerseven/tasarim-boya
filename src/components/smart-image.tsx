@@ -1,6 +1,12 @@
 import Image from "next/image";
 
-const SAFE_REMOTE_HOSTS = new Set(["images.unsplash.com"]);
+const SAFE_REMOTE_HOSTS = new Set(
+  ["images.unsplash.com"].concat(
+    process.env.NEXT_PUBLIC_SUPABASE_URL
+      ? [new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname]
+      : [],
+  ),
+);
 
 function isNextImageSafe(src: string): boolean {
   if (src.startsWith("/")) return true;

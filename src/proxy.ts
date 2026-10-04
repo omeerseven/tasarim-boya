@@ -11,7 +11,7 @@ const PUBLIC_PATHS = new Set([
   "/api/admin/auth/logout",
 ]);
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (PUBLIC_PATHS.has(pathname)) {
@@ -19,7 +19,7 @@ export function proxy(request: NextRequest) {
   }
 
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-  if (!verifySessionToken(token)) {
+  if (!(await verifySessionToken(token))) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Yetkisiz erişim." }, { status: 401 });
     }

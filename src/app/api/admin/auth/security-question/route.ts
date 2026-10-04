@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const success = updateSecurityQuestion(currentPassword, question, answer);
+  const success = await updateSecurityQuestion(currentPassword, question, answer);
   if (!success) {
     return NextResponse.json({ error: "Mevcut şifre yanlış." }, { status: 401 });
   }

@@ -8,6 +8,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Geçersiz logo verisi." }, { status: 400 });
   }
 
-  const content = updateBranding(body);
+  const content = await updateBranding(body);
   return NextResponse.json({ branding: content.branding });
 }

@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const success = changePassword(currentPassword, newPassword);
+  const success = await changePassword(currentPassword, newPassword);
   if (!success) {
     return NextResponse.json({ error: "Mevcut şifre yanlış." }, { status: 401 });
   }

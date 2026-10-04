@@ -8,6 +8,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Geçersiz menü verisi." }, { status: 400 });
   }
 
-  const content = updateNavLinks(body);
+  const content = await updateNavLinks(body);
   return NextResponse.json({ navLinks: content.navLinks });
 }

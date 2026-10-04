@@ -32,8 +32,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AboutPage() {
-  const { about, stats } = getContent();
+export default async function AboutPage() {
+  const { about, stats } = await getContent();
 
   return (
     <>

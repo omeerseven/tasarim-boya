@@ -9,15 +9,16 @@ import { getContent } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
-function getPost(slug: string) {
-  return getContent().blogPosts.find((post) => post.slug === slug);
+async function getPost(slug: string) {
+  const { blogPosts } = await getContent();
+  return blogPosts.find((post) => post.slug === slug);
 }
 
 export async function generateMetadata({
   params,
 }: PageProps<"/blog/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getPost(slug);
   if (!post) return {};
 
   const url = `/blog/${post.slug}`;
@@ -56,7 +57,7 @@ function formatDate(date: string) {
 
 export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">) {
   const { slug } = await params;
-  const { blogPosts } = getContent();
+  const { blogPosts } = await getContent();
   const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) notFound();

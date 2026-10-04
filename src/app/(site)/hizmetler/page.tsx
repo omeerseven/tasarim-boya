@@ -33,8 +33,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ServicesPage() {
-  const { services } = getContent();
+export default async function ServicesPage() {
+  const { services } = await getContent();
   return (
     <>
       <section className="relative overflow-hidden bg-navy-950">

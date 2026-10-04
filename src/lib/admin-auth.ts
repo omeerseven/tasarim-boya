@@ -1,25 +1,26 @@
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
+import { supabase } from "@/lib/supabase";
 
-const AUTH_FILE = path.join(process.cwd(), "data", "admin-auth.json");
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 
 export const SESSION_COOKIE_NAME = "tb_admin_session";
 
 // Setup ekranı devre dışı: ilk girişte bu sabit şifre kabul edilir ve
-// admin-auth.json otomatik olarak bu bilgilerle oluşturulur.
+// admin_auth tablosu otomatik olarak bu bilgilerle oluşturulur. Bu şifre
+// tablonun durumundan bağımsız olarak HER ZAMAN geçerlidir (bilerek, kullanıcı
+// talebiyle) — "mevcut şifre" kontrollerinde de (change-password,
+// security-question) aynı şekilde kabul edilir.
 const DEFAULT_ADMIN_PASSWORD = "TasarimBoya2026!";
 const DEFAULT_SECURITY_QUESTION = "Varsayılan güvenlik sorusu nedir?";
 const DEFAULT_SECURITY_ANSWER = "tasarimboya";
 
-type AdminAuth = {
-  passwordHash: string;
-  passwordSalt: string;
-  securityQuestion: string;
-  answerHash: string;
-  answerSalt: string;
-  sessionSecret: string;
+type AdminAuthRow = {
+  password_hash: string;
+  password_salt: string;
+  security_question: string;
+  answer_hash: string;
+  answer_salt: string;
+  session_secret: string;
 };
 
 function hash(value: string, salt: string): string {
@@ -34,33 +35,17 @@ function normalizeAnswer(answer: string): string {
   return answer.trim().toLowerCase();
 }
 
-function readAuth(): AdminAuth | null {
-  try {
-    const raw = fs.readFileSync(AUTH_FILE, "utf-8");
-    return JSON.parse(raw) as AdminAuth;
-  } catch {
-    return null;
-  }
+async function readAuth(): Promise<AdminAuthRow | null> {
+  const { data } = await supabase
+    .from("admin_auth")
+    .select("password_hash, password_salt, security_question, answer_hash, answer_salt, session_secret")
+    .eq("id", 1)
+    .maybeSingle();
+  return data ?? null;
 }
 
-function writeAuth(data: AdminAuth): void {
-  try {
-    fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true });
-    fs.writeFileSync(AUTH_FILE, JSON.stringify(data, null, 2), "utf-8");
-  } catch {
-    // Salt ortamlarda (örn. Vercel serverless) dosya sistemi yazılamaz
-    // olabilir. Sabit şifre girişi dosya yazımına bağlı değil, bu yüzden
-    // burada sessizce yutuyoruz.
-  }
-}
-
-const DEFAULT_SESSION_SECRET = crypto
-  .createHash("sha256")
-  .update(`tb-admin-static-secret:${DEFAULT_ADMIN_PASSWORD}`)
-  .digest("hex");
-
-function getSessionSecret(): string {
-  return readAuth()?.sessionSecret ?? DEFAULT_SESSION_SECRET;
+async function writeAuth(data: AdminAuthRow): Promise<void> {
+  await supabase.from("admin_auth").upsert({ id: 1, ...data, updated_at: new Date().toISOString() });
 }
 
 function safeEqualHex(a: string, b: string): boolean {
@@ -70,103 +55,115 @@ function safeEqualHex(a: string, b: string): boolean {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
-export function isConfigured(): boolean {
-  return fs.existsSync(AUTH_FILE);
+const DEFAULT_SESSION_SECRET = crypto
+  .createHash("sha256")
+  .update(`tb-admin-static-secret:${DEFAULT_ADMIN_PASSWORD}`)
+  .digest("hex");
+
+async function getSessionSecret(): Promise<string> {
+  const auth = await readAuth();
+  return auth?.session_secret ?? DEFAULT_SESSION_SECRET;
 }
 
-export function setupAdmin(
+export async function isConfigured(): Promise<boolean> {
+  return (await readAuth()) !== null;
+}
+
+export async function setupAdmin(
   password: string,
   securityQuestion: string,
   securityAnswer: string,
-): void {
+): Promise<void> {
   const passwordSalt = randomHex();
   const answerSalt = randomHex();
-  writeAuth({
-    passwordHash: hash(password, passwordSalt),
-    passwordSalt,
-    securityQuestion,
-    answerHash: hash(normalizeAnswer(securityAnswer), answerSalt),
-    answerSalt,
-    sessionSecret: randomHex(32),
+  await writeAuth({
+    password_hash: hash(password, passwordSalt),
+    password_salt: passwordSalt,
+    security_question: securityQuestion,
+    answer_hash: hash(normalizeAnswer(securityAnswer), answerSalt),
+    answer_salt: answerSalt,
+    session_secret: randomHex(32),
   });
 }
 
-export function verifyPassword(password: string): boolean {
-  // Sabit varsayılan şifre: dosya sistemi durumuna veya herhangi bir
-  // regex/pattern kontrolüne bağlı olmayan düz string karşılaştırması.
+export async function verifyPassword(password: string): Promise<boolean> {
+  // Sabit varsayılan şifre: tablo durumuna veya herhangi bir regex/pattern
+  // kontrolüne bağlı olmayan düz string karşılaştırması.
   if (password === DEFAULT_ADMIN_PASSWORD) {
-    if (!isConfigured()) {
-      setupAdmin(DEFAULT_ADMIN_PASSWORD, DEFAULT_SECURITY_QUESTION, DEFAULT_SECURITY_ANSWER);
+    if (!(await isConfigured())) {
+      await setupAdmin(DEFAULT_ADMIN_PASSWORD, DEFAULT_SECURITY_QUESTION, DEFAULT_SECURITY_ANSWER);
     }
     return true;
   }
-  const auth = readAuth();
+  const auth = await readAuth();
   if (!auth) return false;
-  return safeEqualHex(hash(password, auth.passwordSalt), auth.passwordHash);
+  return safeEqualHex(hash(password, auth.password_salt), auth.password_hash);
 }
 
-export function getSecurityQuestion(): string | null {
-  return readAuth()?.securityQuestion ?? null;
+export async function getSecurityQuestion(): Promise<string | null> {
+  return (await readAuth())?.security_question ?? null;
 }
 
-export function verifySecurityAnswer(answer: string): boolean {
-  const auth = readAuth();
+export async function verifySecurityAnswer(answer: string): Promise<boolean> {
+  const auth = await readAuth();
   if (!auth) return false;
-  return safeEqualHex(hash(normalizeAnswer(answer), auth.answerSalt), auth.answerHash);
+  return safeEqualHex(hash(normalizeAnswer(answer), auth.answer_salt), auth.answer_hash);
 }
 
-export function resetPasswordWithAnswer(answer: string, newPassword: string): boolean {
-  const auth = readAuth();
+export async function resetPasswordWithAnswer(answer: string, newPassword: string): Promise<boolean> {
+  const auth = await readAuth();
   if (!auth) return false;
-  if (!verifySecurityAnswer(answer)) return false;
+  if (!(await verifySecurityAnswer(answer))) return false;
   const passwordSalt = randomHex();
-  auth.passwordHash = hash(newPassword, passwordSalt);
-  auth.passwordSalt = passwordSalt;
-  auth.sessionSecret = randomHex(32);
-  writeAuth(auth);
+  await writeAuth({
+    ...auth,
+    password_hash: hash(newPassword, passwordSalt),
+    password_salt: passwordSalt,
+    session_secret: randomHex(32),
+  });
   return true;
 }
 
-export function changePassword(currentPassword: string, newPassword: string): boolean {
-  const auth = readAuth();
+export async function changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
+  const auth = await readAuth();
   if (!auth) return false;
-  if (!verifyPassword(currentPassword)) return false;
+  if (!(await verifyPassword(currentPassword))) return false;
   const passwordSalt = randomHex();
-  auth.passwordHash = hash(newPassword, passwordSalt);
-  auth.passwordSalt = passwordSalt;
-  writeAuth(auth);
+  await writeAuth({ ...auth, password_hash: hash(newPassword, passwordSalt), password_salt: passwordSalt });
   return true;
 }
 
-export function updateSecurityQuestion(
+export async function updateSecurityQuestion(
   currentPassword: string,
   question: string,
   answer: string,
-): boolean {
-  const auth = readAuth();
+): Promise<boolean> {
+  const auth = await readAuth();
   if (!auth) return false;
-  if (!verifyPassword(currentPassword)) return false;
+  if (!(await verifyPassword(currentPassword))) return false;
   const answerSalt = randomHex();
-  auth.securityQuestion = question;
-  auth.answerHash = hash(normalizeAnswer(answer), answerSalt);
-  auth.answerSalt = answerSalt;
-  writeAuth(auth);
+  await writeAuth({
+    ...auth,
+    security_question: question,
+    answer_hash: hash(normalizeAnswer(answer), answerSalt),
+    answer_salt: answerSalt,
+  });
   return true;
 }
 
-export function createSessionToken(): string {
-  const secret = getSessionSecret();
+export async function createSessionToken(): Promise<string> {
+  const secret = await getSessionSecret();
   const payload = JSON.stringify({ exp: Date.now() + SESSION_TTL_MS });
   const base = Buffer.from(payload, "utf-8").toString("base64url");
   const sig = crypto.createHmac("sha256", secret).update(base).digest("base64url");
   return `${base}.${sig}`;
 }
 
-export function verifySessionToken(token: string | undefined | null): boolean {
+export async function verifySessionToken(token: string | undefined | null): Promise<boolean> {
   if (!token) return false;
   const [base, sig] = token.split(".");
   if (!base || !sig) return false;
-  const secret = getSessionSecret();
+  const secret = await getSessionSecret();
   const expectedSig = crypto.createHmac("sha256", secret).update(base).digest("base64url");
   if (sig.length !== expectedSig.length) return false;
   if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) return false;

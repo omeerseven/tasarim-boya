@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const leads = await getLeads();
-  const content = getContent();
+  const content = await getContent();
 
   return (
     <div className="admin-theme min-h-screen bg-background">

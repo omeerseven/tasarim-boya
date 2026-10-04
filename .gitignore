@@ -40,7 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# admin auth secrets & user uploads (runtime-generated, never commit)
-/data/admin-auth.json
+# legacy fs-backed data (migrated to Supabase; never commit real user/customer data)
+/data/
 /public/uploads/*
 !/public/uploads/.gitkeep

@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactPage() {
-  const { services, contact } = getContent();
+export default async function ContactPage() {
+  const { services, contact } = await getContent();
 
   const contactInfo = [
     { icon: MapPin, title: "Adres", detail: contact.address },
