@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { SmartImage } from "@/components/smart-image";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { PanelShell, type PanelMessage } from "@/components/admin/panel-shell";
 import { ListItemCard, reorder } from "@/components/admin/list-item-card";
 import type { BlogPost } from "@/lib/content";
@@ -145,17 +145,12 @@ export function BlogPanel({ initialPosts }: { initialPosts: BlogPost[] }) {
                 <Input value={post.author} onChange={(e) => updatePost(post.id, { author: e.target.value })} />
               </div>
             </div>
-            <div className="flex items-end gap-4">
-              <div className="relative h-20 w-32 flex-none overflow-hidden rounded-lg border border-border bg-muted">
-                {post.image ? (
-                  <SmartImage src={post.image} alt={post.title || "Önizleme"} fill className="object-cover" />
-                ) : null}
-              </div>
-              <div className="flex-1 space-y-1.5">
-                <Label>Görsel URL&apos;si</Label>
-                <Input value={post.image} onChange={(e) => updatePost(post.id, { image: e.target.value })} />
-              </div>
-            </div>
+            <ImageUploadField
+              label="Görsel"
+              value={post.image}
+              onChange={(url) => updatePost(post.id, { image: url })}
+              alt={post.title}
+            />
           </ListItemCard>
         ))}
         {posts.length === 0 && <p className="text-sm text-muted-foreground">Henüz blog yazısı eklenmedi.</p>}

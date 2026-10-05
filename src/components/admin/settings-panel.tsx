@@ -8,15 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { PanelShell, type PanelMessage } from "@/components/admin/panel-shell";
 import { ContactPanel } from "@/components/admin/contact-panel";
-import { NavLinksPanel } from "@/components/admin/nav-links-panel";
-import type { ContactInfo, NavLink } from "@/lib/content";
+import type { ContactInfo } from "@/lib/content";
 
 export function SettingsPanel({
   initialContact,
-  initialNavLinks,
 }: {
   initialContact: ContactInfo;
-  initialNavLinks: NavLink[];
 }) {
   const router = useRouter();
 
@@ -105,7 +102,6 @@ export function SettingsPanel({
   return (
     <div className="space-y-6">
       <ContactPanel initialContact={initialContact} />
-      <NavLinksPanel initialNavLinks={initialNavLinks} />
 
       <PanelShell
         title="Şifre Değiştir"

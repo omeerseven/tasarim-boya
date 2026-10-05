@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { SmartImage } from "@/components/smart-image";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { PanelShell, type PanelMessage } from "@/components/admin/panel-shell";
 import { ListItemCard, reorder } from "@/components/admin/list-item-card";
 import type { Hero, HeroSlide } from "@/lib/content";
@@ -45,7 +45,7 @@ export function HeroPanel({ initialHero }: { initialHero: Hero }) {
       return;
     }
     if (hero.slides.some((s) => !s.image.trim())) {
-      setMessage({ type: "error", text: "Tüm slider alanları için görsel URL'si girilmelidir." });
+      setMessage({ type: "error", text: "Tüm slider alanları için bir görsel yüklenmelidir." });
       return;
     }
 
@@ -125,7 +125,7 @@ export function HeroPanel({ initialHero }: { initialHero: Hero }) {
 
       <PanelShell
         title="Hero Slider Görselleri"
-        description="Ana sayfada dönen görselleri ekleyin, kaldırın veya sıralayın. Görsel URL'si için Medya sekmesinden yüklediğiniz bir görseli kopyalayabilirsiniz."
+        description="Ana sayfada dönen görselleri ekleyin, kaldırın veya sıralayın."
         onSave={handleSave}
         saving={saving}
         message={message}
@@ -151,24 +151,17 @@ export function HeroPanel({ initialHero }: { initialHero: Hero }) {
               canMoveUp={index > 0}
               canMoveDown={index < hero.slides.length - 1}
             >
-              <div className="flex gap-4">
-                <div className="relative h-20 w-32 flex-none overflow-hidden rounded-lg border border-border bg-muted">
-                  {slide.image ? (
-                    <SmartImage src={slide.image} alt={slide.alt || "Önizleme"} fill className="object-cover" />
-                  ) : null}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Input
-                    placeholder="Görsel URL'si (/uploads/... veya https://...)"
-                    value={slide.image}
-                    onChange={(e) => updateSlide(slide.id, { image: e.target.value })}
-                  />
-                  <Input
-                    placeholder="Alternatif metin (alt)"
-                    value={slide.alt}
-                    onChange={(e) => updateSlide(slide.id, { alt: e.target.value })}
-                  />
-                </div>
+              <div className="space-y-3">
+                <ImageUploadField
+                  value={slide.image}
+                  onChange={(url) => updateSlide(slide.id, { image: url })}
+                  alt={slide.alt}
+                />
+                <Input
+                  placeholder="Alternatif metin (alt)"
+                  value={slide.alt}
+                  onChange={(e) => updateSlide(slide.id, { alt: e.target.value })}
+                />
               </div>
             </ListItemCard>
           ))}

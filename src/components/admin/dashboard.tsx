@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FileText, Image as ImageIcon, Images, Inbox, Layers } from "lucide-react";
+import { FileText, Image as ImageIcon, Images, Inbox, Layers, Menu as MenuIcon } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -17,6 +17,7 @@ import { AboutPanel } from "@/components/admin/about-panel";
 import { BlogPanel } from "@/components/admin/blog-panel";
 import { MediaPanel } from "@/components/admin/media-panel";
 import { BrandingPanel } from "@/components/admin/branding-panel";
+import { NavLinksPanel } from "@/components/admin/nav-links-panel";
 import { SettingsPanel } from "@/components/admin/settings-panel";
 import type { Lead } from "@/lib/leads";
 import type { SiteContent } from "@/lib/content";
@@ -56,6 +57,10 @@ export function AdminDashboard({
           <TabsTrigger value="hizmetler">Hizmetler</TabsTrigger>
           <TabsTrigger value="hakkimizda">Hakkımızda</TabsTrigger>
           <TabsTrigger value="blog">Blog</TabsTrigger>
+          <TabsTrigger value="menu">
+            <MenuIcon className="h-3.5 w-3.5" />
+            Menü
+          </TabsTrigger>
           <TabsTrigger value="medya">
             <Images className="h-3.5 w-3.5" />
             Medya
@@ -89,6 +94,10 @@ export function AdminDashboard({
           <BlogPanel initialPosts={content.blogPosts} />
         </TabsContent>
 
+        <TabsContent value="menu" className="mt-6">
+          <NavLinksPanel initialNavLinks={content.navLinks} />
+        </TabsContent>
+
         <TabsContent value="medya" className="mt-6">
           <MediaPanel initialMedia={content.media} />
         </TabsContent>
@@ -98,7 +107,7 @@ export function AdminDashboard({
         </TabsContent>
 
         <TabsContent value="ayarlar" className="mt-6">
-          <SettingsPanel initialContact={content.contact} initialNavLinks={content.navLinks} />
+          <SettingsPanel initialContact={content.contact} />
         </TabsContent>
       </Tabs>
     </div>

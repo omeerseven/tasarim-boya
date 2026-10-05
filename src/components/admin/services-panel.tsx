@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { SmartImage } from "@/components/smart-image";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { PanelShell, type PanelMessage } from "@/components/admin/panel-shell";
 import { ListItemCard, reorder } from "@/components/admin/list-item-card";
 import type { Service } from "@/lib/content";
@@ -137,17 +137,12 @@ export function ServicesPanel({ initialServices }: { initialServices: Service[] 
                 onChange={(e) => updateService(service.id, { features: textToLines(e.target.value) })}
               />
             </div>
-            <div className="flex items-end gap-4">
-              <div className="relative h-20 w-32 flex-none overflow-hidden rounded-lg border border-border bg-muted">
-                {service.image ? (
-                  <SmartImage src={service.image} alt={service.title || "Önizleme"} fill className="object-cover" />
-                ) : null}
-              </div>
-              <div className="flex-1 space-y-1.5">
-                <Label>Görsel URL&apos;si</Label>
-                <Input value={service.image} onChange={(e) => updateService(service.id, { image: e.target.value })} />
-              </div>
-            </div>
+            <ImageUploadField
+              label="Görsel"
+              value={service.image}
+              onChange={(url) => updateService(service.id, { image: url })}
+              alt={service.title}
+            />
           </ListItemCard>
         ))}
         {services.length === 0 && <p className="text-sm text-muted-foreground">Henüz hizmet eklenmedi.</p>}

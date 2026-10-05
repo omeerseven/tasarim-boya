@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { SmartImage } from "@/components/smart-image";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { PanelShell, type PanelMessage } from "@/components/admin/panel-shell";
 import { ListItemCard, reorder } from "@/components/admin/list-item-card";
 import type { About, AboutValue, TeamMember } from "@/lib/content";
@@ -84,17 +84,11 @@ export function AboutPanel({ initialAbout }: { initialAbout: About }) {
               onChange={(e) => updateField("heroDescription", e.target.value)}
             />
           </div>
-          <div className="flex items-end gap-4">
-            <div className="relative h-20 w-32 flex-none overflow-hidden rounded-lg border border-border bg-muted">
-              {about.heroImage ? (
-                <SmartImage src={about.heroImage} alt="Önizleme" fill className="object-cover" />
-              ) : null}
-            </div>
-            <div className="flex-1 space-y-1.5">
-              <Label>Arka Plan Görsel URL&apos;si</Label>
-              <Input value={about.heroImage} onChange={(e) => updateField("heroImage", e.target.value)} />
-            </div>
-          </div>
+          <ImageUploadField
+            label="Arka Plan Görseli"
+            value={about.heroImage}
+            onChange={(url) => updateField("heroImage", url)}
+          />
         </div>
       </PanelShell>
 
@@ -112,17 +106,11 @@ export function AboutPanel({ initialAbout }: { initialAbout: About }) {
               onChange={(e) => updateField("storyParagraphs", textToLines(e.target.value))}
             />
           </div>
-          <div className="flex items-end gap-4">
-            <div className="relative h-20 w-32 flex-none overflow-hidden rounded-lg border border-border bg-muted">
-              {about.storyImage ? (
-                <SmartImage src={about.storyImage} alt="Önizleme" fill className="object-cover" />
-              ) : null}
-            </div>
-            <div className="flex-1 space-y-1.5">
-              <Label>Görsel URL&apos;si</Label>
-              <Input value={about.storyImage} onChange={(e) => updateField("storyImage", e.target.value)} />
-            </div>
-          </div>
+          <ImageUploadField
+            label="Görsel"
+            value={about.storyImage}
+            onChange={(url) => updateField("storyImage", url)}
+          />
         </div>
       </PanelShell>
 
@@ -224,29 +212,23 @@ export function AboutPanel({ initialAbout }: { initialAbout: About }) {
               canMoveUp={index > 0}
               canMoveDown={index < about.team.length - 1}
             >
-              <div className="flex items-start gap-3">
-                <div className="relative h-16 w-16 flex-none overflow-hidden rounded-full border border-border bg-muted">
-                  {member.image ? (
-                    <SmartImage src={member.image} alt={member.name || "Önizleme"} fill className="object-cover" />
-                  ) : null}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Input
-                    placeholder="Ad Soyad"
-                    value={member.name}
-                    onChange={(e) => updateTeamMember(member.id, { name: e.target.value })}
-                  />
-                  <Input
-                    placeholder="Unvan"
-                    value={member.role}
-                    onChange={(e) => updateTeamMember(member.id, { role: e.target.value })}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Input
+                  placeholder="Ad Soyad"
+                  value={member.name}
+                  onChange={(e) => updateTeamMember(member.id, { name: e.target.value })}
+                />
+                <Input
+                  placeholder="Unvan"
+                  value={member.role}
+                  onChange={(e) => updateTeamMember(member.id, { role: e.target.value })}
+                />
               </div>
-              <Input
-                placeholder="Görsel URL'si"
+              <ImageUploadField
                 value={member.image}
-                onChange={(e) => updateTeamMember(member.id, { image: e.target.value })}
+                onChange={(url) => updateTeamMember(member.id, { image: url })}
+                alt={member.name}
+                shape="circle"
               />
             </ListItemCard>
           ))}
