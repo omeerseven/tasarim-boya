@@ -24,7 +24,7 @@ function textToLines(text: string): string[] {
 
 function newService(): Service {
   return {
-    id: `new-${crypto.randomUUID()}`,
+    id: crypto.randomUUID(),
     slug: "",
     title: "",
     shortDescription: "",

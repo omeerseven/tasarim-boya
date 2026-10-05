@@ -12,7 +12,7 @@ import { ListItemCard, reorder } from "@/components/admin/list-item-card";
 import type { Hero, HeroSlide } from "@/lib/content";
 
 function newSlide(): HeroSlide {
-  return { id: `new-${crypto.randomUUID()}`, image: "", alt: "" };
+  return { id: crypto.randomUUID(), image: "", alt: "" };
 }
 
 export function HeroPanel({ initialHero }: { initialHero: Hero }) {

@@ -152,7 +152,7 @@ export function AboutPanel({ initialAbout }: { initialAbout: About }) {
             onClick={() =>
               setAbout((prev) => ({
                 ...prev,
-                values: [...prev.values, { id: `new-${crypto.randomUUID()}`, title: "", description: "" }],
+                values: [...prev.values, { id: crypto.randomUUID(), title: "", description: "" }],
               }))
             }
           >
@@ -203,7 +203,7 @@ export function AboutPanel({ initialAbout }: { initialAbout: About }) {
             onClick={() =>
               setAbout((prev) => ({
                 ...prev,
-                team: [...prev.team, { id: `new-${crypto.randomUUID()}`, name: "", role: "", image: "" }],
+                team: [...prev.team, { id: crypto.randomUUID(), name: "", role: "", image: "" }],
               }))
             }
           >

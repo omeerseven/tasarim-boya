@@ -49,7 +49,7 @@ export function StatsPanel({ initialStats }: { initialStats: Stat[] }) {
           variant="outline"
           size="sm"
           onClick={() =>
-            setStats((prev) => [...prev, { id: `new-${crypto.randomUUID()}`, label: "", value: "" }])
+            setStats((prev) => [...prev, { id: crypto.randomUUID(), label: "", value: "" }])
           }
         >
           <Plus className="h-4 w-4" />

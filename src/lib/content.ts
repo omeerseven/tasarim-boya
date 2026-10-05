@@ -120,10 +120,33 @@ const EMPTY_ABOUT: Omit<About, "values" | "team"> = {
   mission: "",
 };
 
+/**
+ * Syncs a list-editing panel's full array back to its table: upserts every
+ * row by id (insert if new, update if existing) first, then deletes only
+ * the rows that are no longer present. Deleting is intentionally the last
+ * step — if the upsert fails (e.g. bad data) we throw before touching any
+ * existing row, instead of wiping the table and then failing to repopulate it.
+ */
 async function replaceTable(table: string, rows: Record<string, unknown>[]): Promise<void> {
-  await supabase.from(table).delete().not("id", "is", null);
   if (rows.length > 0) {
-    await supabase.from(table).insert(rows);
+    const { error: upsertError } = await supabase.from(table).upsert(rows);
+    if (upsertError) {
+      throw new Error(`Supabase upsert failed for table "${table}": ${upsertError.message}`);
+    }
+
+    const ids = rows.map((row) => row.id);
+    const { error: deleteError } = await supabase
+      .from(table)
+      .delete()
+      .not("id", "in", `(${ids.join(",")})`);
+    if (deleteError) {
+      throw new Error(`Supabase delete failed for table "${table}": ${deleteError.message}`);
+    }
+  } else {
+    const { error: deleteError } = await supabase.from(table).delete().not("id", "is", null);
+    if (deleteError) {
+      throw new Error(`Supabase delete failed for table "${table}": ${deleteError.message}`);
+    }
   }
 }
 
@@ -268,15 +291,24 @@ export async function getContent(): Promise<SiteContent> {
   return { branding, contact, navLinks, hero, stats, faqs, services, about, blogPosts, media };
 }
 
+async function upsertSingleton(table: string, row: Record<string, unknown>): Promise<void> {
+  const { error } = await supabase.from(table).upsert(row);
+  if (error) {
+    throw new Error(`Supabase upsert failed for table "${table}": ${error.message}`);
+  }
+}
+
 export async function updateBranding(branding: Branding): Promise<SiteContent> {
-  await supabase
-    .from("branding")
-    .upsert({ id: 1, logo_url: branding.logoUrl, updated_at: new Date().toISOString() });
+  await upsertSingleton("branding", {
+    id: 1,
+    logo_url: branding.logoUrl,
+    updated_at: new Date().toISOString(),
+  });
   return getContent();
 }
 
 export async function updateContact(contact: ContactInfo): Promise<SiteContent> {
-  await supabase.from("contact_info").upsert({
+  await upsertSingleton("contact_info", {
     id: 1,
     phone_display: contact.phoneDisplay,
     phone_href: contact.phoneHref,
@@ -299,7 +331,7 @@ export async function updateNavLinks(navLinks: NavLink[]): Promise<SiteContent> 
 }
 
 export async function updateHero(hero: Hero): Promise<SiteContent> {
-  await supabase.from("hero").upsert({
+  await upsertSingleton("hero", {
     id: 1,
     badge: hero.badge,
     title: hero.title,
@@ -351,7 +383,7 @@ export async function updateServices(services: Service[]): Promise<SiteContent> 
 }
 
 export async function updateAbout(about: About): Promise<SiteContent> {
-  await supabase.from("about").upsert({
+  await upsertSingleton("about", {
     id: 1,
     hero_title: about.heroTitle,
     hero_description: about.heroDescription,
@@ -407,14 +439,20 @@ export async function updateBlogPosts(blogPosts: BlogPost[]): Promise<SiteConten
 
 export async function addMediaItem(item: Omit<MediaItem, "id" | "uploadedAt">): Promise<MediaItem> {
   const mediaItem: MediaItem = { ...item, id: id(), uploadedAt: new Date().toISOString() };
-  await supabase
+  const { error } = await supabase
     .from("media")
     .insert({ id: mediaItem.id, url: mediaItem.url, name: mediaItem.name, uploaded_at: mediaItem.uploadedAt });
+  if (error) {
+    throw new Error(`Supabase insert failed for table "media": ${error.message}`);
+  }
   return mediaItem;
 }
 
 export async function removeMediaItem(mediaId: string): Promise<boolean> {
-  const { data } = await supabase.from("media").delete().eq("id", mediaId).select("id");
+  const { data, error } = await supabase.from("media").delete().eq("id", mediaId).select("id");
+  if (error) {
+    throw new Error(`Supabase delete failed for table "media": ${error.message}`);
+  }
   return (data?.length ?? 0) > 0;
 }
 

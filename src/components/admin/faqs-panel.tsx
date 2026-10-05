@@ -52,7 +52,7 @@ export function FaqsPanel({ initialFaqs }: { initialFaqs: Faq[] }) {
           onClick={() =>
             setFaqs((prev) => [
               ...prev,
-              { id: `new-${crypto.randomUUID()}`, question: "", answer: "" },
+              { id: crypto.randomUUID(), question: "", answer: "" },
             ])
           }
         >

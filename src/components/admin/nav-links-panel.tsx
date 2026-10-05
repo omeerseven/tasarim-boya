@@ -53,7 +53,7 @@ export function NavLinksPanel({ initialNavLinks }: { initialNavLinks: NavLink[] 
           variant="outline"
           size="sm"
           onClick={() =>
-            setNavLinks((prev) => [...prev, { id: `new-${crypto.randomUUID()}`, label: "", href: "/" }])
+            setNavLinks((prev) => [...prev, { id: crypto.randomUUID(), label: "", href: "/" }])
           }
         >
           <Plus className="h-4 w-4" />

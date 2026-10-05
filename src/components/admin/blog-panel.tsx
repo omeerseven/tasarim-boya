@@ -24,7 +24,7 @@ function textToLines(text: string): string[] {
 
 function newPost(): BlogPost {
   return {
-    id: `new-${crypto.randomUUID()}`,
+    id: crypto.randomUUID(),
     slug: "",
     title: "",
     excerpt: "",
