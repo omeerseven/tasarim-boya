@@ -58,10 +58,6 @@ export function HeroSlider({ hero }: { hero: Hero }) {
             className="pointer-events-none absolute left-1/2 top-1/2 h-[26rem] w-[44rem] max-w-[92vw] -translate-x-1/2 -translate-y-1/2 rounded-[3rem] bg-navy-950/40 blur-3xl"
           />
 
-          <span className="relative inline-flex items-center gap-2 rounded-full border border-gold-400/50 bg-navy-950/60 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-gold-300 shadow-[0_2px_20px_rgba(0,0,0,0.35)]">
-            {hero.badge}
-          </span>
-
           <h1 className="relative max-w-3xl font-heading text-4xl font-semibold leading-tight text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.65)] sm:text-5xl lg:text-6xl">
             {hero.title}
           </h1>
