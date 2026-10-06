@@ -55,6 +55,7 @@ export function AdminDashboard({
         <TabsList className="flex-wrap">
           <TabsTrigger value="mesajlar">Gelen Kutusu</TabsTrigger>
           <TabsTrigger value="ana-sayfa">Ana Sayfa</TabsTrigger>
+          <TabsTrigger value="oncesi-sonrasi">Öncesi / Sonrası</TabsTrigger>
           <TabsTrigger value="hizmetler">Hizmetler</TabsTrigger>
           <TabsTrigger value="hakkimizda">Hakkımızda</TabsTrigger>
           <TabsTrigger value="blog">Blog</TabsTrigger>
@@ -80,8 +81,11 @@ export function AdminDashboard({
         <TabsContent value="ana-sayfa" className="mt-6 space-y-6">
           <HeroPanel initialHero={content.hero} />
           <StatsPanel initialStats={content.stats} />
-          <BeforeAfterPanel initialItems={content.beforeAfterItems} />
           <FaqsPanel initialFaqs={content.faqs} />
+        </TabsContent>
+
+        <TabsContent value="oncesi-sonrasi" className="mt-6">
+          <BeforeAfterPanel initialItems={content.beforeAfterItems} />
         </TabsContent>
 
         <TabsContent value="hizmetler" className="mt-6">
