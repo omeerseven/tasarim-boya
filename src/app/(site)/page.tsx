@@ -10,7 +10,7 @@ import { FaqSection } from "@/components/faq-section";
 import { TestimonialsSection } from "@/components/testimonials-section";
 import { LeadForm } from "@/components/lead-form";
 import { SmartImage } from "@/components/smart-image";
-import { beforeAfterItems, processSteps } from "@/lib/data";
+import { processSteps } from "@/lib/data";
 import { getContent } from "@/lib/content";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 
@@ -62,7 +62,7 @@ const highlights = [
 ];
 
 export default async function HomePage() {
-  const { hero, stats, services, faqs } = await getContent();
+  const { hero, stats, services, faqs, beforeAfterItems } = await getContent();
 
   return (
     <>
@@ -128,15 +128,17 @@ export default async function HomePage() {
                 href={`/hizmetler#${service.slug}`}
                 className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
               >
-                <div className="relative h-48 w-full">
-                  <SmartImage
-                    src={service.image}
-                    alt={service.title}
-                    fill
-                    sizes="(min-width: 1024px) 33vw, 100vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
+                {service.images[0] && (
+                  <div className="relative h-48 w-full">
+                    <SmartImage
+                      src={service.images[0]}
+                      alt={service.title}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, 100vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                )}
                 <div className="p-6">
                   <h3 className="font-heading text-lg font-semibold text-navy-950 transition-colors group-hover:text-gold-600">
                     {service.title}
@@ -163,28 +165,30 @@ export default async function HomePage() {
       </section>
 
       {/* Before / After */}
-      <section className="py-20 sm:py-24">
-        <Container>
-          <SectionHeading
-            eyebrow="Dönüşümler"
-            title="Öncesi / Sonrası"
-            description="Gerçek projelerimizden seçtiğimiz örneklerle, boya ve tadilat uygulamalarımızın mekanlara kattığı farkı birlikte görelim."
-          />
-          <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {beforeAfterItems.map((item) => (
-              <BeforeAfterSlider
-                key={item.title}
-                title={item.title}
-                before={item.before}
-                after={item.after}
-              />
-            ))}
-          </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            Karşılaştırmayı görmek için kaydırıcıyı sürükleyin.
-          </p>
-        </Container>
-      </section>
+      {beforeAfterItems.length > 0 && (
+        <section className="py-20 sm:py-24">
+          <Container>
+            <SectionHeading
+              eyebrow="Dönüşümler"
+              title="Öncesi / Sonrası"
+              description="Gerçek projelerimizden seçtiğimiz örneklerle, boya ve tadilat uygulamalarımızın mekanlara kattığı farkı birlikte görelim."
+            />
+            <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {beforeAfterItems.map((item) => (
+                <BeforeAfterSlider
+                  key={item.id}
+                  title={item.title}
+                  before={item.beforeImage}
+                  after={item.afterImage}
+                />
+              ))}
+            </div>
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Karşılaştırmayı görmek için kaydırıcıyı sürükleyin.
+            </p>
+          </Container>
+        </section>
+      )}
 
       {/* Process */}
       <section className="bg-navy-950 py-20 sm:py-24">

@@ -39,30 +39,6 @@ export const testimonials: Testimonial[] = [
   },
 ];
 
-export type BeforeAfterItem = {
-  title: string;
-  before: string;
-  after: string;
-};
-
-export const beforeAfterItems: BeforeAfterItem[] = [
-  {
-    title: "Salon Yenileme — Ataşehir",
-    before: IMG.neutralLounge,
-    after: IMG.heroLiving,
-  },
-  {
-    title: "Mutfak Dekorasyonu — Kadıköy",
-    before: IMG.loftSpace,
-    after: IMG.kitchenModern,
-  },
-  {
-    title: "Yatak Odası Yenileme — Beşiktaş",
-    before: IMG.cozyCorner,
-    after: IMG.bedroomBright,
-  },
-];
-
 export type ProcessStep = {
   title: string;
   description: string;

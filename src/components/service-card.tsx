@@ -1,6 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import type { Service } from "@/lib/content";
-import { SmartImage } from "@/components/smart-image";
+import { ServiceGallery } from "@/components/service-gallery";
 
 export function ServiceCard({
   service,
@@ -14,15 +14,9 @@ export function ServiceCard({
       id={service.slug}
       className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
     >
-      <div className="relative h-64 w-full sm:h-80">
-        <SmartImage
-          src={service.image}
-          alt={service.title}
-          fill
-          sizes="100vw"
-          className="object-cover"
-        />
-        <span className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 font-heading text-sm font-semibold text-navy-950">
+      <div className="relative">
+        <ServiceGallery images={service.images} alt={service.title} />
+        <span className="absolute left-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 font-heading text-sm font-semibold text-navy-950">
           {String(index + 1).padStart(2, "0")}
         </span>
       </div>

@@ -24,7 +24,14 @@ export type Service = {
   shortDescription: string;
   longDescription: string[];
   features: string[];
-  image: string;
+  images: string[];
+};
+
+export type BeforeAfterItem = {
+  id: string;
+  title: string;
+  beforeImage: string;
+  afterImage: string;
 };
 
 export type AboutValue = { id: string; title: string; description: string };
@@ -84,6 +91,7 @@ export type SiteContent = {
   about: About;
   blogPosts: BlogPost[];
   media: MediaItem[];
+  beforeAfterItems: BeforeAfterItem[];
 };
 
 function id(): string {
@@ -165,6 +173,7 @@ export async function getContent(): Promise<SiteContent> {
     teamMembersRes,
     blogPostsRes,
     mediaRes,
+    beforeAfterItemsRes,
   ] = await Promise.all([
     supabase.from("branding").select("*").eq("id", 1).maybeSingle(),
     supabase.from("contact_info").select("*").eq("id", 1).maybeSingle(),
@@ -179,6 +188,7 @@ export async function getContent(): Promise<SiteContent> {
     supabase.from("team_members").select("*").order("position", { ascending: true }),
     supabase.from("blog_posts").select("*").order("position", { ascending: true }),
     supabase.from("media").select("*").order("uploaded_at", { ascending: false }),
+    supabase.from("before_after_items").select("*").order("position", { ascending: true }),
   ]);
 
   const branding = brandingRes.data
@@ -238,7 +248,7 @@ export async function getContent(): Promise<SiteContent> {
     shortDescription: row.short_description,
     longDescription: row.long_description ?? [],
     features: row.features ?? [],
-    image: row.image,
+    images: row.images && row.images.length > 0 ? row.images : row.image ? [row.image] : [],
   }));
 
   const aboutRow = aboutRes.data;
@@ -288,7 +298,26 @@ export async function getContent(): Promise<SiteContent> {
     uploadedAt: row.uploaded_at,
   }));
 
-  return { branding, contact, navLinks, hero, stats, faqs, services, about, blogPosts, media };
+  const beforeAfterItems: BeforeAfterItem[] = (beforeAfterItemsRes.data ?? []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    beforeImage: row.before_image,
+    afterImage: row.after_image,
+  }));
+
+  return {
+    branding,
+    contact,
+    navLinks,
+    hero,
+    stats,
+    faqs,
+    services,
+    about,
+    blogPosts,
+    media,
+    beforeAfterItems,
+  };
 }
 
 async function upsertSingleton(table: string, row: Record<string, unknown>): Promise<void> {
@@ -375,7 +404,21 @@ export async function updateServices(services: Service[]): Promise<SiteContent> 
       short_description: service.shortDescription,
       long_description: service.longDescription,
       features: service.features,
-      image: service.image,
+      images: service.images,
+      position: index,
+    })),
+  );
+  return getContent();
+}
+
+export async function updateBeforeAfterItems(items: BeforeAfterItem[]): Promise<SiteContent> {
+  await replaceTable(
+    "before_after_items",
+    items.map((item, index) => ({
+      id: item.id,
+      title: item.title,
+      before_image: item.beforeImage,
+      after_image: item.afterImage,
       position: index,
     })),
   );

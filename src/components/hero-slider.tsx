@@ -111,20 +111,6 @@ export function HeroSlider({ hero }: { hero: Hero }) {
           >
             <ChevronRight className="h-5 w-5" />
           </button>
-
-          <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2">
-            {slides.map((slide, i) => (
-              <button
-                key={slide.id}
-                type="button"
-                onClick={() => goTo(i)}
-                aria-label={`${i + 1}. görsele git`}
-                className={`h-2 rounded-full transition-all ${
-                  i === index ? "w-7 bg-gold-400" : "w-2 bg-white/50 hover:bg-white/80"
-                }`}
-              />
-            ))}
-          </div>
         </>
       )}
     </section>

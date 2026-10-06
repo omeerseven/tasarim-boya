@@ -12,6 +12,7 @@ import { LeadsPanel } from "@/components/admin/leads-panel";
 import { HeroPanel } from "@/components/admin/hero-panel";
 import { StatsPanel } from "@/components/admin/stats-panel";
 import { FaqsPanel } from "@/components/admin/faqs-panel";
+import { BeforeAfterPanel } from "@/components/admin/before-after-panel";
 import { ServicesPanel } from "@/components/admin/services-panel";
 import { AboutPanel } from "@/components/admin/about-panel";
 import { BlogPanel } from "@/components/admin/blog-panel";
@@ -79,6 +80,7 @@ export function AdminDashboard({
         <TabsContent value="ana-sayfa" className="mt-6 space-y-6">
           <HeroPanel initialHero={content.hero} />
           <StatsPanel initialStats={content.stats} />
+          <BeforeAfterPanel initialItems={content.beforeAfterItems} />
           <FaqsPanel initialFaqs={content.faqs} />
         </TabsContent>
 

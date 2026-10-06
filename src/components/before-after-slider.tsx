@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { unsplash } from "@/lib/unsplash";
+import { SmartImage } from "@/components/smart-image";
 
 export function BeforeAfterSlider({
   before,
@@ -18,8 +17,8 @@ export function BeforeAfterSlider({
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       <div className="relative aspect-[4/3] w-full select-none overflow-hidden">
-        <Image
-          src={unsplash(after, 1200)}
+        <SmartImage
+          src={after}
           alt={`${title} - sonrası`}
           fill
           sizes="(min-width: 1024px) 33vw, 100vw"
@@ -30,8 +29,8 @@ export function BeforeAfterSlider({
           className="absolute inset-0 overflow-hidden"
           style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
         >
-          <Image
-            src={unsplash(before, 1200)}
+          <SmartImage
+            src={before}
             alt={`${title} - öncesi`}
             fill
             sizes="(min-width: 1024px) 33vw, 100vw"

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ImageUploadField } from "@/components/admin/image-upload-field";
+import { MultiImageUploadField } from "@/components/admin/multi-image-upload-field";
 import { PanelShell, type PanelMessage } from "@/components/admin/panel-shell";
 import { ListItemCard, reorder } from "@/components/admin/list-item-card";
 import type { Service } from "@/lib/content";
@@ -30,7 +30,7 @@ function newService(): Service {
     shortDescription: "",
     longDescription: [],
     features: [],
-    image: "",
+    images: [],
   };
 }
 
@@ -137,11 +137,10 @@ export function ServicesPanel({ initialServices }: { initialServices: Service[] 
                 onChange={(e) => updateService(service.id, { features: textToLines(e.target.value) })}
               />
             </div>
-            <ImageUploadField
-              label="Görsel"
-              value={service.image}
-              onChange={(url) => updateService(service.id, { image: url })}
-              alt={service.title}
+            <MultiImageUploadField
+              label="Görseller"
+              values={service.images}
+              onChange={(images) => updateService(service.id, { images })}
             />
           </ListItemCard>
         ))}
